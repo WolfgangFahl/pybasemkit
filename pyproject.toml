@@ -3,8 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "pybasekit"
-description = "Python infrastructure kit: YAML/JSON I/O, structured logging, CLI tooling, shell execution, and pydevd remote debug support."
+name = "pybasemkit"
+description = "Python base module kit: YAML/JSON I/O, structured logging, CLI tooling, shell execution, and pydevd remote debug support."
 keywords = ["infrastructure", "logging", "yaml", "shell", "cli", "dataclass", "debug"]
 authors = [
   { name = "Wolfgang Fahl", email = "wf@WolfgangFahl.com" }
@@ -43,9 +43,9 @@ classifiers = [
 ]
 
 [project.urls]
-Home = "https://github.com/WolfgangFahl/pybasekit"
-Documentation = "https://wiki.bitplan.com/index.php/pybasekit"
-Source = "https://github.com/WolfgangFahl/pybasekit"
+Home = "https://github.com/WolfgangFahl/pybasemkit"
+Documentation = "https://wiki.bitplan.com/index.php/pybasemkit"
+Source = "https://github.com/WolfgangFahl/pybasemkit"
 
 [project.optional-dependencies]
 test = [
@@ -80,7 +80,7 @@ allow-direct-references = true
 only-include = ["basekit"]
 
 [tool.hatch.build.targets.wheel.sources]
-"pybasekit" = "basekit"
+"pybasemkit" = "basekit"
 
 [tool.black]
 line-length = 120

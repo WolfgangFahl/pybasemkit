@@ -11,9 +11,9 @@ Prompts:
 import os
 import tempfile
 
-from basekit.yamlable import lod_storable
+from basemkit.yamlable import lod_storable
 
-from basekit.basetest import Basetest
+from basemkit.basetest import Basetest
 
 
 @lod_storable

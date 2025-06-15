@@ -1,6 +1,6 @@
 #!/bin/bash
 # WF 2024-08-15
-for package in basekit tests
+for package in basemkit tests
 do
   isort $package/*.py
   black $package/*.py
