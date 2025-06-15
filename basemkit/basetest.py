@@ -10,7 +10,7 @@ import threading
 import unittest
 from functools import wraps
 
-from ngwidgets.profiler import Profiler
+from basemkit.profiler import Profiler
 
 
 class Basetest(unittest.TestCase):

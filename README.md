@@ -8,3 +8,6 @@ Python base module kit: YAML/JSON I/O, structured logging, CLI tooling, shell ex
 [![GitHub closed issues](https://img.shields.io/github/issues-closed/WolfgangFahl/pybasemkit.svg)](https://github.com/WolfgangFahl/pybasemkit/issues/?q=is%3Aissue+is%3Aclosed)
 [![API Docs](https://img.shields.io/badge/API-Documentation-blue)](https://WolfgangFahl.github.io/pybasemkit/)
 [![License](https://img.shields.io/github/license/WolfgangFahl/pybasemkit.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+
+## Docs and Tutorials
+[Wiki](https://wiki.bitplan.com/index.php/pybasemkit)
