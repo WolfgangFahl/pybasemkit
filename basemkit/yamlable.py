@@ -38,8 +38,7 @@ Prompts for the development and extension of the 'YamlAble' class within the 'ya
 import urllib.request
 from collections.abc import Iterable, Mapping
 from dataclasses import asdict, dataclass, is_dataclass
-from datetime import datetime
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Generic, TextIO, Type, TypeVar, Union
 
@@ -261,7 +260,7 @@ class YamlAble(Generic[T]):
         instance: T = cls.from_json(json_str)
         return instance
 
-    def save_to_json_file(self, filename: str, **kwargs):
+    def save_to_json_file(self, filename: str, **kwargs: Any):
         """
         Saves the current dataclass instance to a JSON file.
 

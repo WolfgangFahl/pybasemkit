@@ -77,10 +77,10 @@ path = "basemkit/__init__.py"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-only-include = ["basekit"]
+only-include = ["basemkit"]
 
 [tool.hatch.build.targets.wheel.sources]
-"pybasemkit" = "basekit"
+"pybasemkit" = "basemkit"
 
 [tool.black]
 line-length = 120
