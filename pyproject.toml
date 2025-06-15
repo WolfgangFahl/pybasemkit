@@ -1,0 +1,86 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pybasekit"
+description = "Python infrastructure kit: YAML/JSON I/O, structured logging, CLI tooling, shell execution, and pydevd remote debug support."
+keywords = ["infrastructure", "logging", "yaml", "shell", "cli", "dataclass", "debug"]
+authors = [
+  { name = "Wolfgang Fahl", email = "wf@WolfgangFahl.com" }
+]
+maintainers = [
+  { name = "Wolfgang Fahl", email = "wf@WolfgangFahl.com" }
+]
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+dynamic = ["version"]
+
+dependencies = [
+  # https://pypi.org/project/dacite/
+  # Simple creation of data classes from dictionaries.
+  "dacite>=1.9.2",
+  # https://pypi.org/project/dataclasses-json/
+  # Easily serialize dataclasses to and from JSON.
+  "dataclasses-json>=0.6.7",
+  # https://pypi.org/project/PyYAML/
+  # YAML parser and emitter for Python
+  "PyYAML>=6.0.2",
+]
+
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Libraries :: Python Modules"
+]
+
+[project.urls]
+Home = "https://github.com/WolfgangFahl/pybasekit"
+Documentation = "https://wiki.bitplan.com/index.php/pybasekit"
+Source = "https://github.com/WolfgangFahl/pybasekit"
+
+[project.optional-dependencies]
+test = [
+  # https://pypi.org/project/pytest/
+  # pytest: simple powerful testing with Python
+  "pytest>=8.4.0",
+  # https://pypi.org/project/green/
+  # Green is a clean, colorful, fast python test runner.
+  "green>=3.3.0",
+  # https://pypi.org/project/tox/
+  # tox is a generic virtualenv management and test command line tool
+  "tox>=4.15.0",
+]
+dev = [
+  # https://pypi.org/project/black/
+  # The uncompromising code formatter.
+  "black>=25.1.0",
+  # A Python utility / library to sort Python imports.
+  # https://pypi.org/project/isort/
+  "isort>=6.0.1",
+  #"mypy>=1.0.0",
+  #"pre-commit>=3.0.0",
+]
+
+[tool.hatch.version]
+path = "basekit/__init__.py"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+only-include = ["basekit"]
+
+[tool.hatch.build.targets.wheel.sources]
+"pybasekit" = "basekit"
+
+[tool.black]
+line-length = 120
