@@ -45,12 +45,55 @@ class BaseCmd:
         Args:
             parser (ArgumentParser): The parser to add arguments to.
         """
-        parser.add_argument("-a", "--about", action="store_true", help="show version info and open documentation")
-        parser.add_argument("-d", "--debug", action="store_true", help="enable debug output")
-        parser.add_argument("-f", "--force", action="store_true", help="force overwrite or unsafe actions")
-        parser.add_argument("-q", "--quiet", action="store_true", help="suppress all output")
-        parser.add_argument("-v", "--verbose", action="store_true", help="increase output verbosity")
-        parser.add_argument("-V", "--version", action="version", version=self.program_version_message)
+        parser.add_argument(
+            "-a", "--about",
+            action="store_true",
+            help="show version info and open documentation"
+        )
+        parser.add_argument(
+            "-d", "--debug",
+            action="store_true",
+            help="enable debug output"
+        )
+        parser.add_argument(
+            "--debugLocalPath",
+            help="remote debug Server path mapping - localPath - path on machine where python runs"
+        )
+        parser.add_argument(
+            "--debugPort",
+            type=int,
+            default=5678,
+            help="remote debug Port [default: %(default)s]"
+        )
+        parser.add_argument(
+            "--debugRemotePath",
+            help="remote debug Server path mapping - remotePath - path on debug server"
+        )
+        parser.add_argument(
+            "--debugServer",
+            help="remote debug Server"
+        )
+        parser.add_argument(
+            "-f", "--force",
+            action="store_true",
+            help="force overwrite or unsafe actions"
+        )
+        parser.add_argument(
+            "-q", "--quiet",
+            action="store_true",
+            help="suppress all output"
+        )
+        parser.add_argument(
+            "-v", "--verbose",
+            action="store_true",
+            help="increase output verbosity"
+        )
+        parser.add_argument(
+            "-V", "--version",
+            action="version",
+            version=self.program_version_message
+        )
+
 
     def get_arg_parser(self) -> ArgumentParser:
         """
@@ -78,6 +121,32 @@ class BaseCmd:
         self.args = self.parser.parse_args(argv)
         return self.args
 
+    def optional_debug(self, args: Namespace):
+        """
+        Optionally start remote debugging if debugServer is specified.
+
+        Args:
+            args (Namespace): Parsed CLI arguments
+        """
+        if args.debugServer:
+            import pydevd
+            import pydevd_file_utils
+
+            remote_path = args.debugRemotePath
+            local_path  = args.debugLocalPath
+
+            if remote_path and local_path:
+                pydevd_file_utils.setup_client_server_paths([(remote_path, local_path)])
+
+            pydevd.settrace(
+                args.debugServer,
+                port=args.debugPort,
+                stdoutToServer=True,
+                stderrToServer=True,
+            )
+            print("Remote debugger attached.")
+
+
     def handle_args(self, args: Namespace) -> bool:
         """
         Handle parsed arguments. Intended to be overridden in subclasses.
@@ -93,7 +162,7 @@ class BaseCmd:
         self.quiet = args.quiet
         self.verbose = args.verbose
         self.force = args.force
-
+        self.optional_debug(args)
         if args.about:
             print(self.program_version_message)
             print(f"see {self.version.doc_url}")
