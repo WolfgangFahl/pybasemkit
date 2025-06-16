@@ -6,21 +6,15 @@ Minimal reusable command line base class with standard options.
 @author: wf
 """
 
-# avoid ugly deprecation messages see
-# https://stackoverflow.com/questions/879173/how-to-ignore-deprecation-warnings-in-python
-# and
 from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
 import sys
 import traceback
 from typing import Any, Optional, List
 import webbrowser
-
 import shutup
-
-
+# avoid ugly deprecation messages see
+# https://stackoverflow.com/questions/879173/how-to-ignore-deprecation-warnings-in-python
 shutup.please()
-
-
 
 class BaseCmd:
     """
@@ -40,7 +34,8 @@ class BaseCmd:
         """
         self.version = version
         self.description = description or self.version.description
-        self.program_version_message = f"{self.version.name} {self.version.version}"
+        self.version_msg = f"{self.version.name} {self.version.version}"
+        self.program_version_message = self.version_msg
         self.debug = False
         self.quiet = False
         self.verbose = False
@@ -71,6 +66,19 @@ class BaseCmd:
         parser.add_argument("-v", "--verbose", action="store_true", help="increase output verbosity")
         parser.add_argument("-V", "--version", action="version", version=self.program_version_message)
 
+
+    def getArgParser(self, description: str, version_msg: str) -> ArgumentParser:
+        """
+        Compatibility layer for legacy camelCase contract.
+        Calls get_arg_parser with overridden description and version_msg.
+        """
+        self.description = description
+        self.program_version_message = version_msg
+        parser = ArgumentParser(description=description, formatter_class=RawDescriptionHelpFormatter)
+        self.add_arguments(parser)
+        return parser
+
+
     def get_arg_parser(self) -> ArgumentParser:
         """
         Create and configure the argument parser.
@@ -78,8 +86,7 @@ class BaseCmd:
         Returns:
             ArgumentParser: The configured argument parser.
         """
-        parser = ArgumentParser(description=self.description, formatter_class=RawDescriptionHelpFormatter)
-        self.add_arguments(parser)
+        parser = self.getArgParser(self.description, self.version_msg)
         return parser
 
     def parse_args(self, argv=None) -> Namespace:
