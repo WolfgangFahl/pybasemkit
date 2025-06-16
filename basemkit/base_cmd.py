@@ -9,15 +9,17 @@ Minimal reusable command line base class with standard options.
 # avoid ugly deprecation messages see
 # https://stackoverflow.com/questions/879173/how-to-ignore-deprecation-warnings-in-python
 # and
+from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
+import sys
+import traceback
+from typing import Any, Optional, List
+import webbrowser
+
 import shutup
+
 
 shutup.please()
 
-import sys
-import traceback
-import webbrowser
-from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
-from typing import Any, Optional
 
 
 class BaseCmd:
@@ -44,6 +46,7 @@ class BaseCmd:
         self.verbose = False
         self.force = False
         self.parser = None
+        self.exit_code = 0
         self.args = None
 
     def add_arguments(self, parser: ArgumentParser):
@@ -92,7 +95,14 @@ class BaseCmd:
         if self.parser is None:
             self.parser = self.get_arg_parser()
         self.args = self.parser.parse_args(argv)
-        return self.args
+        args = self.args
+        return args
+
+    def cmd_parse(self, argv: List[str]) -> Namespace:
+        """delegate method"""
+        args= self.parse_args(argv)
+        return args
+
 
     def optional_debug(self, args: Namespace):
         """
