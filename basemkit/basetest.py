@@ -10,6 +10,7 @@ import threading
 import unittest
 from functools import wraps
 from typing import Callable
+
 from basemkit.profiler import Profiler
 
 
@@ -47,7 +48,7 @@ class Basetest(unittest.TestCase):
         return getpass.getuser() == name
 
     @staticmethod
-    def timeout(seconds: float)->Callable:
+    def timeout(seconds: float) -> Callable:
         """
         Decorator to enforce a timeout on test methods.
 

@@ -3,8 +3,9 @@ Created on 2025-05-14
 
 @author: wf
 """
-from basemkit.shell import Shell
+
 from basemkit.basetest import Basetest
+from basemkit.shell import Shell
 
 
 class TestShell(Basetest):
@@ -21,11 +22,11 @@ class TestShell(Basetest):
         """
         shell = Shell()
         for cmd, expected in [
-            #("pwd", "test"),
-            #("which git", "git"),
+            # ("pwd", "test"),
+            # ("which git", "git"),
             ("echo $PATH", "bin"),
-            #("docker ps", "CONTAINER ID"),
-            #("which soffice", "soffice"),
+            # ("docker ps", "CONTAINER ID"),
+            # ("which soffice", "soffice"),
         ]:
             p = shell.run(cmd, tee=self.debug)
             if self.debug:

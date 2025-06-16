@@ -12,7 +12,7 @@ class Profiler:
     simple profiler
     """
 
-    def __init__(self, msg:str, profile=True, with_start: bool = True):
+    def __init__(self, msg: str, profile=True, with_start: bool = True):
         """
         Construct the profiler with the given message and flags.
 
@@ -34,7 +34,7 @@ class Profiler:
         if self.profile:
             print(f"Starting {self.msg} ...")
 
-    def time(self, extraMsg:str=""):
+    def time(self, extraMsg: str = ""):
         """
         time the action and print if profile is active
         """
