@@ -6,11 +6,18 @@ Minimal reusable command line base class with standard options.
 @author: wf
 """
 
-from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
+# avoid ugly deprecation messages see
+# https://stackoverflow.com/questions/879173/how-to-ignore-deprecation-warnings-in-python
+# and
+import shutup
+
+shutup.please()
+
 import sys
 import traceback
-from typing import Any, Optional
 import webbrowser
+from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
+from typing import Any, Optional
 
 
 class BaseCmd:
@@ -21,7 +28,7 @@ class BaseCmd:
     Intended to be subclassed by tools requiring consistent CLI behavior.
     """
 
-    def __init__(self, version:Any, description: Optional[str] = None):
+    def __init__(self, version: Any, description: Optional[str] = None):
         """
         Initialize the BaseCmd instance.
 
@@ -46,55 +53,20 @@ class BaseCmd:
         Args:
             parser (ArgumentParser): The parser to add arguments to.
         """
+        parser.add_argument("-a", "--about", action="store_true", help="show version info and open documentation")
+        parser.add_argument("-d", "--debug", action="store_true", help="enable debug output")
         parser.add_argument(
-            "-a", "--about",
-            action="store_true",
-            help="show version info and open documentation"
+            "--debugLocalPath", help="remote debug Server path mapping - localPath - path on machine where python runs"
         )
+        parser.add_argument("--debugPort", type=int, default=5678, help="remote debug Port [default: %(default)s]")
         parser.add_argument(
-            "-d", "--debug",
-            action="store_true",
-            help="enable debug output"
+            "--debugRemotePath", help="remote debug Server path mapping - remotePath - path on debug server"
         )
-        parser.add_argument(
-            "--debugLocalPath",
-            help="remote debug Server path mapping - localPath - path on machine where python runs"
-        )
-        parser.add_argument(
-            "--debugPort",
-            type=int,
-            default=5678,
-            help="remote debug Port [default: %(default)s]"
-        )
-        parser.add_argument(
-            "--debugRemotePath",
-            help="remote debug Server path mapping - remotePath - path on debug server"
-        )
-        parser.add_argument(
-            "--debugServer",
-            help="remote debug Server"
-        )
-        parser.add_argument(
-            "-f", "--force",
-            action="store_true",
-            help="force overwrite or unsafe actions"
-        )
-        parser.add_argument(
-            "-q", "--quiet",
-            action="store_true",
-            help="suppress all output"
-        )
-        parser.add_argument(
-            "-v", "--verbose",
-            action="store_true",
-            help="increase output verbosity"
-        )
-        parser.add_argument(
-            "-V", "--version",
-            action="version",
-            version=self.program_version_message
-        )
-
+        parser.add_argument("--debugServer", help="remote debug Server")
+        parser.add_argument("-f", "--force", action="store_true", help="force overwrite or unsafe actions")
+        parser.add_argument("-q", "--quiet", action="store_true", help="suppress all output")
+        parser.add_argument("-v", "--verbose", action="store_true", help="increase output verbosity")
+        parser.add_argument("-V", "--version", action="version", version=self.program_version_message)
 
     def get_arg_parser(self) -> ArgumentParser:
         """
@@ -134,7 +106,7 @@ class BaseCmd:
             import pydevd_file_utils
 
             remote_path = args.debugRemotePath
-            local_path  = args.debugLocalPath
+            local_path = args.debugLocalPath
 
             if remote_path and local_path:
                 pydevd_file_utils.setup_client_server_paths([(remote_path, local_path)])
@@ -146,7 +118,6 @@ class BaseCmd:
                 stderrToServer=True,
             )
             print("Remote debugger attached.")
-
 
     def handle_args(self, args: Namespace) -> bool:
         """
@@ -200,7 +171,7 @@ class BaseCmd:
         return exit_code
 
     @classmethod
-    def main(cls, version:Any, argv=None) -> int:
+    def main(cls, version: Any, argv=None) -> int:
         """
         Entry point for scripts using this command line interface.
 

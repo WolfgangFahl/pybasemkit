@@ -27,6 +27,9 @@ dependencies = [
   # https://pypi.org/project/PyYAML/
   # YAML parser and emitter for Python
   "PyYAML>=6.0.2",
+  # https://pypi.org/project/shutup/
+  # Stop python warnings, no matter what!
+  "shutup>=0.2.0"
 ]
 
 classifiers = [

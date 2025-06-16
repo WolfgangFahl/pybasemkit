@@ -4,9 +4,10 @@ Created on 2025-06-16
 @author: wf
 """
 
-from basemkit.basetest import Basetest
-from basemkit.base_cmd import BaseCmd
 from argparse import Namespace
+
+from basemkit.base_cmd import BaseCmd
+from basemkit.basetest import Basetest
 
 
 class DummyVersion:
