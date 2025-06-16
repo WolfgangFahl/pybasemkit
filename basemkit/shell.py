@@ -11,6 +11,7 @@ import sys
 import threading
 from pathlib import Path
 from typing import Dict, List
+from argparse import Namespace
 
 class ShellResult:
     """
@@ -123,7 +124,7 @@ class Shell:
     Runs commands with environment from profile
     """
 
-    def __init__(self, profile=None, shell_path: str = None):
+    def __init__(self, profile:str=None, shell_path: str = None):
         """
         Initialize shell with optional profile
 
@@ -161,7 +162,7 @@ class Shell:
         return profile
 
     @classmethod
-    def ofArgs(cls, args):
+    def ofArgs(cls, args:Namespace)->'Shell':
         """
         Create Shell from command line args
 
@@ -176,7 +177,7 @@ class Shell:
         shell = cls(profile=profile)
         return shell
 
-    def run(self, cmd, text=True, debug=False, tee=False) -> subprocess.CompletedProcess:
+    def run(self, cmd:str, text:bool=True, debug:bool=False, tee:bool=False) -> subprocess.CompletedProcess:
         """
         Run command with profile, always capturing output and optionally teeing it.
 

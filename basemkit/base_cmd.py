@@ -6,10 +6,11 @@ Minimal reusable command line base class with standard options.
 @author: wf
 """
 
+from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
 import sys
 import traceback
+from typing import Any, Optional
 import webbrowser
-from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
 
 
 class BaseCmd:
@@ -20,7 +21,7 @@ class BaseCmd:
     Intended to be subclassed by tools requiring consistent CLI behavior.
     """
 
-    def __init__(self, version, description: str = None):
+    def __init__(self, version:Any, description: Optional[str] = None):
         """
         Initialize the BaseCmd instance.
 
@@ -199,7 +200,7 @@ class BaseCmd:
         return exit_code
 
     @classmethod
-    def main(cls, version, argv=None) -> int:
+    def main(cls, version:Any, argv=None) -> int:
         """
         Entry point for scripts using this command line interface.
 
