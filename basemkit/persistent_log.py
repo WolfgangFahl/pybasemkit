@@ -10,7 +10,7 @@ from dataclasses import field
 from datetime import datetime
 from typing import List, Optional, Tuple
 
-from lodstorage.yamlable import lod_storable
+from basemkit.yamlable import lod_storable
 
 # ANSI colors
 BLUE = "\033[0;34m"
