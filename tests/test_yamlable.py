@@ -10,6 +10,7 @@ Prompts:
 
 import os
 import tempfile
+from typing import Optional
 
 from basemkit.basetest import Basetest
 from basemkit.yamlable import lod_storable
@@ -29,8 +30,8 @@ class MockDataClass:
 
     name: str
     id: int
-    description: str = None
-    url: str = None
+    description: Optional[str] = None
+    url: Optional[str] = None
     flag: bool = True
     # sample_tuple: tuple = (1, 2, 3)  # Add a tuple attribute for testing
 
@@ -129,3 +130,20 @@ class TestYamlAble(Basetest):
             self.assertEqual(loaded_instance.id, self.mock_data.id)
             # Clean up the temp file
             os.remove(temp_file.name)
+
+    def test_load_with_none_optional_field(self) -> None:
+        """
+        Test that loading YAML with a None value for an Optional[str] field works without error.
+        """
+        yaml_with_none = """
+name: TestName
+id: 1
+description: null
+url: null
+"""
+        loaded = MockDataClass.from_yaml(yaml_with_none)
+        self.assertEqual(loaded.name, "TestName")
+        self.assertEqual(loaded.id, 1)
+        self.assertIsNone(loaded.description)
+        self.assertIsNone(loaded.url)
+
