@@ -137,3 +137,10 @@ class Log:
             logging.log(level, icon_msg)
         if self.do_print:
             print(icon_msg)
+
+    def dump(self):
+        """
+        dump my entries
+        """
+        for entry in self.entries:
+            print(entry.as_text())
