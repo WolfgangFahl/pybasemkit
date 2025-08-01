@@ -34,7 +34,11 @@ class BaseCmd:
         """
         self.version = version
         self.description = description or self.version.description
-        self.version_msg = f"{self.version.name} {self.version.version}"
+        name = getattr(self.version, "name", "")
+        version = getattr(self.version, "version", "")
+        updated = getattr(self.version, "updated", "")
+        self.version_msg = f"{name} {version} {updated}".strip()
+
         self.program_version_message = self.version_msg
         self.debug = False
         self.quiet = False
