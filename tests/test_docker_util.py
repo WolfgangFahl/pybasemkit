@@ -4,7 +4,7 @@ Created on 2025-05-28
 @author: wf
 """
 
-from omnigraph.docker_util import DockerUtil
+from basemkit.docker_util import DockerUtil
 from basemkit.shell import Shell
 from basemkit.persistent_log import Log
 from basemkit.basetest import Basetest
