@@ -116,7 +116,9 @@ class BaseCmd:
 
     def optional_debug(self, args: Namespace):
         """
-        Optionally start remote debugging if debugServer is specified.
+        Optionally start pydevd remote debugging if debugServer is specified.
+
+        see https://www.pydev.org/manual_adv_remote_debugger.html
 
         Args:
             args (Namespace): Parsed CLI arguments
@@ -128,8 +130,16 @@ class BaseCmd:
             remote_path = args.debugRemotePath
             local_path = args.debugLocalPath
 
+            # note the complexity of https://stackoverflow.com/a/41765551/1497139
+            # discussed in 2011
             if remote_path and local_path:
-                pydevd_file_utils.setup_client_server_paths([(remote_path, local_path)])
+                remotes = [r.strip() for r in remote_path.split(",")]
+                locals_ = [l.strip() for l in local_path.split(",")]
+                if len(remotes) != len(locals_):
+                    raise ValueError("debugRemotePath and debugLocalPath must have the same number of entries")
+                mappings = list(zip(remotes, locals_))
+                pydevd_file_utils.setup_client_server_paths(mappings)
+
 
             pydevd.settrace(
                 args.debugServer,
