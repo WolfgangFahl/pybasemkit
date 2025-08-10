@@ -13,7 +13,7 @@ class TestShell(Basetest):
     test shell commands
     """
 
-    def setUp(self, debug=False, profile=True):
+    def setUp(self, debug=True, profile=True):
         Basetest.setUp(self, debug=debug, profile=profile)
 
     def testShell(self):

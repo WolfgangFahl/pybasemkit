@@ -138,7 +138,7 @@ class Shell:
         if self.shell_path is None:
             self.shell_path = os.environ.get("SHELL", "/bin/bash")
         self.shell_name = os.path.basename(self.shell_path)
-        self.source_op="{self.source_op}"
+        self.source_op="source"
         if self.profile is None:
             self.profile = self.find_profile()
             if self.profile==".profile":
@@ -194,7 +194,7 @@ class Shell:
         Returns:
             subprocess.CompletedProcess
         """
-        shell_cmd = f"{self.source_op} {self.profile} && {cmd}" if self.profile else cmd
+        shell_cmd = f"source {self.profile} && {cmd}" if self.profile else cmd
 
         if debug:
             print(f"Running: {shell_cmd}")
