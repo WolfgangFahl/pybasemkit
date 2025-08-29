@@ -146,4 +146,3 @@ url: null
         self.assertEqual(loaded.id, 1)
         self.assertIsNone(loaded.description)
         self.assertIsNone(loaded.url)
-

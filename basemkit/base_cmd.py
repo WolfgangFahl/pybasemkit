@@ -6,15 +6,18 @@ Minimal reusable command line base class with standard options.
 @author: wf
 """
 
-from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
 import sys
 import traceback
-from typing import Any, Optional, List
 import webbrowser
+from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
+from typing import Any, List, Optional
+
 import shutup
+
 # avoid ugly deprecation messages see
 # https://stackoverflow.com/questions/879173/how-to-ignore-deprecation-warnings-in-python
 shutup.please()
+
 
 class BaseCmd:
     """
@@ -69,7 +72,6 @@ class BaseCmd:
         parser.add_argument("-v", "--verbose", action="store_true", help="increase output verbosity")
         parser.add_argument("-V", "--version", action="version", version=self.program_version_message)
 
-
     def getArgParser(self, description: str, version_msg: str) -> ArgumentParser:
         """
         Compatibility layer for legacy camelCase contract.
@@ -80,7 +82,6 @@ class BaseCmd:
         parser = ArgumentParser(description=description, formatter_class=RawDescriptionHelpFormatter)
         self.add_arguments(parser)
         return parser
-
 
     def get_arg_parser(self) -> ArgumentParser:
         """
@@ -110,9 +111,8 @@ class BaseCmd:
 
     def cmd_parse(self, argv: List[str]) -> Namespace:
         """delegate method"""
-        args= self.parse_args(argv)
+        args = self.parse_args(argv)
         return args
-
 
     def optional_debug(self, args: Namespace):
         """
@@ -139,7 +139,6 @@ class BaseCmd:
                     raise ValueError("debugRemotePath and debugLocalPath must have the same number of entries")
                 mappings = list(zip(remotes, locals_))
                 pydevd_file_utils.setup_client_server_paths(mappings)
-
 
             pydevd.settrace(
                 args.debugServer,

@@ -7,8 +7,8 @@ Created on 2025-05-14
 import json
 import os
 import subprocess
-from tempfile import NamedTemporaryFile
 import traceback
+from tempfile import NamedTemporaryFile
 from typing import Any, Dict, Optional
 
 from basemkit.persistent_log import Log
@@ -20,15 +20,10 @@ class DockerUtil:
     docker utilities
     """
 
-    def __init__(self,
-        shell: Shell,
-        container_name: str,
-        log:Log,
-        verbose: bool = False,
-        debug: bool = False):
+    def __init__(self, shell: Shell, container_name: str, log: Log, verbose: bool = False, debug: bool = False):
         self.shell = shell
         self.container_name = container_name
-        self.log=log
+        self.log = log
         self.verbose = verbose
         self.debug = debug
 

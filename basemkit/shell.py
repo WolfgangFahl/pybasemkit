@@ -138,11 +138,11 @@ class Shell:
         if self.shell_path is None:
             self.shell_path = os.environ.get("SHELL", "/bin/bash")
         self.shell_name = os.path.basename(self.shell_path)
-        self.source_op="source"
+        self.source_op = "source"
         if self.profile is None:
             self.profile = self.find_profile()
-            if self.profile==".profile":
-                self.source_op="."
+            if self.profile == ".profile":
+                self.source_op = "."
 
     def find_profile(self) -> str:
         """

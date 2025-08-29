@@ -36,14 +36,14 @@ class LogEntry:
 
     def as_text(self) -> str:
         """Return text representation of log entry with timestamp"""
-        text=f'[{self.timestamp}] {self.msg}'
+        text = f"[{self.timestamp}] {self.msg}"
         return text
 
     def as_html(self) -> str:
         """Return HTML representation of log entry with appropriate styling"""
         color = "red" if self.level_name == "error" else "orange" if self.level_name == "warn" else "black"
-        text=self.as_text()
-        markup= f'<p style="color: {color};">{text}</p>'
+        text = self.as_text()
+        markup = f'<p style="color: {color};">{text}</p>'
         return markup
 
 
