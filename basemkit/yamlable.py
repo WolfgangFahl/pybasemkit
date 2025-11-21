@@ -68,8 +68,12 @@ def lod_storable(cls):
         __qualname__ = cls.__qualname__
         pass
 
+    # Ensure the new class created by the decorator (LoDStorable)
+    # retains the identity of the original class (cls) for proper
+    # serialization and module lookup.
     LoDStorable.__name__ = cls.__name__
     LoDStorable.__doc__ = cls.__doc__
+    LoDStorable.__module__ = cls.__module__
 
     return LoDStorable
 
