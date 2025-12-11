@@ -172,6 +172,33 @@ class BaseCmd:
 
         return False
 
+    def handle_exception(self, e: BaseException) -> int:
+        """
+        Handle exceptions occurring during execution.
+        Subclasses can override this to provide custom error handling.
+
+        Args:
+            e (BaseException): The exception that was raised.
+
+        Returns:
+            int: The exit code (1 for KeyboardInterrupt, 2 for other exceptions).
+        """
+        exit_code=0
+        if isinstance(e, KeyboardInterrupt):
+            exit_code=1
+        else:
+            # Check self.debug or args.debug specifically for traceback logic
+            is_debug = self.debug or (self.args and getattr(self.args, "debug", False))
+
+            if is_debug:
+                traceback.print_exc()
+            else:
+                msg=f"{self.version.name}: {e}\n"
+                sys.stderr.write(msg)
+            exit_code=2
+        return exit_code
+
+
     def run(self, argv=None) -> int:
         """
         Execute the command line logic.
@@ -188,15 +215,8 @@ class BaseCmd:
             exit_code = 0
             if not handled:
                 exit_code = 0
-        except KeyboardInterrupt:
-            exit_code = 1
-        except Exception as e:
-            if self.debug:
-                raise
-            sys.stderr.write(f"{self.version.name}: {e}\n")
-            if getattr(self, "args", None) and self.args.debug:
-                sys.stderr.write(traceback.format_exc())
-            exit_code = 2
+        except BaseException as e:
+            exit_code = self.handle_exception(e)
         return exit_code
 
     @classmethod
