@@ -6,9 +6,8 @@ Created on 29.08.2025
 
 import argparse
 
-from basemkit.basetest import Basetest
-
 from basemkit.argparse_action import StoreDictKeyPair
+from basemkit.basetest import Basetest
 
 
 class TestStoreDictKeyPair(Basetest):
