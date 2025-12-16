@@ -184,18 +184,21 @@ class BaseCmd:
             int: The exit code (1 for KeyboardInterrupt, 2 for other exceptions).
         """
         exit_code = 0
-        if isinstance(e, KeyboardInterrupt):
-            exit_code = 1
+        if isinstance(e, SystemExit):
+            exit_code=e.code if e.code is not None else 0
         else:
-            # Check self.debug or args.debug specifically for traceback logic
-            is_debug = self.debug or (self.args and getattr(self.args, "debug", False))
-
-            if is_debug:
-                traceback.print_exc()
+            if isinstance(e, KeyboardInterrupt):
+                exit_code = 1
             else:
-                msg = f"{self.version.name}: {e}\n"
-                sys.stderr.write(msg)
-            exit_code = 2
+                # Check self.debug or args.debug specifically for traceback logic
+                is_debug = self.debug or (self.args and getattr(self.args, "debug", False))
+
+                if is_debug:
+                    traceback.print_exc()
+                else:
+                    msg = f"{self.version.name} {type(e).__name__}: {e}\n"
+                    sys.stderr.write(msg)
+                exit_code = 2
         return exit_code
 
     def run(self, argv=None) -> int:
