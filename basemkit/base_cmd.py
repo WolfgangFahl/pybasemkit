@@ -142,10 +142,12 @@ class BaseCmd:
                 if args.debug:
                     fqdn = socket.getfqdn()
                     print(f"Local={fqdn}",file=sys.stderr)
+                    print(f"Remote={args.debugServer}",file=sys.stderr)
                     print(f"DEBUG: I am running in: {os.getcwd()}",file=sys.stderr)
                     print(f"DEBUG: This file is at: {os.path.abspath(__file__)}",file=sys.stderr)
                     for r, l in mappings:
-                        print(f"DEBUG PATH MAP: Remote (IDE)='{r}' <-> Local='{l}'", file=sys.stderr)
+                        marker="✅" if os.path.exists(l) else "❌"
+                        print(f"DEBUG PATH MAP: Remote (IDE)='{r}' <-> Local='{l}' {marker}", file=sys.stderr)
                 # https://github.com/fabioz/PyDev.Debugger/blob/main/pydevd_file_utils.py
                 pydevd_file_utils.setup_client_server_paths(mappings)
 
