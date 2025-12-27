@@ -140,9 +140,9 @@ class BaseCmd:
                 mappings = list(zip(remotes, locals_))
                 if args.debug:
                     fqdn = socket.getfqdn()
-                    print(f"Remote={fqdn}",file=sys.stderr)
+                    print(f"Local={fqdn}",file=sys.stderr)
                     for r, l in mappings:
-                        print(f"DEBUG PATH MAP: Remote='{r}' <-> Local(IDE)='{l}'", file=sys.stderr)
+                        print(f"DEBUG PATH MAP: Remote (IDE)='{r}' <-> Local='{l}'", file=sys.stderr)
                 pydevd_file_utils.setup_client_server_paths(mappings)
 
 
