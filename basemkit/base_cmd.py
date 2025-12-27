@@ -5,7 +5,7 @@ Minimal reusable command line base class with standard options.
 
 @author: wf
 """
-
+import socket
 import sys
 import traceback
 import webbrowser
@@ -138,7 +138,13 @@ class BaseCmd:
                 if len(remotes) != len(locals_):
                     raise ValueError("debugRemotePath and debugLocalPath must have the same number of entries")
                 mappings = list(zip(remotes, locals_))
+                if args.debug:
+                    fqdn = socket.getfqdn()
+                    print(f"Remote={fqdn}")
+                    for r, l in mappings:
+                        print(f"DEBUG PATH MAP: Remote='{r}' <-> Local(IDE)='{l}'", file=sys.stderr)
                 pydevd_file_utils.setup_client_server_paths(mappings)
+
 
             pydevd.settrace(
                 args.debugServer,
