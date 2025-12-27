@@ -5,6 +5,7 @@ Minimal reusable command line base class with standard options.
 
 @author: wf
 """
+import os
 import socket
 import sys
 import traceback
@@ -141,6 +142,8 @@ class BaseCmd:
                 if args.debug:
                     fqdn = socket.getfqdn()
                     print(f"Local={fqdn}",file=sys.stderr)
+                    print(f"DEBUG: I am running in: {os.getcwd()}",file=sys.stderr)
+                    print(f"DEBUG: This file is at: {os.path.abspath(__file__)}",file=sys.stderr)
                     for r, l in mappings:
                         print(f"DEBUG PATH MAP: Remote (IDE)='{r}' <-> Local='{l}'", file=sys.stderr)
                 # https://github.com/fabioz/PyDev.Debugger/blob/main/pydevd_file_utils.py
