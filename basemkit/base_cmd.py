@@ -143,6 +143,7 @@ class BaseCmd:
                     print(f"Local={fqdn}",file=sys.stderr)
                     for r, l in mappings:
                         print(f"DEBUG PATH MAP: Remote (IDE)='{r}' <-> Local='{l}'", file=sys.stderr)
+                # https://github.com/fabioz/PyDev.Debugger/blob/main/pydevd_file_utils.py
                 pydevd_file_utils.setup_client_server_paths(mappings)
 
 
@@ -151,6 +152,7 @@ class BaseCmd:
                 port=args.debugPort,
                 stdoutToServer=True,
                 stderrToServer=True,
+                suspend=True
             )
             print("Remote debugger attached.")
 
