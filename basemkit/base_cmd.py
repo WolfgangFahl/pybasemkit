@@ -159,7 +159,8 @@ class BaseCmd:
                 original_setup = pydevd_file_utils.setup_client_server_paths
 
                 def debug_setup(paths):
-                    print(f"DEBUG: setup_client_server_paths called with:", file=sys.stderr)
+                    if args.debug:
+                        print(f"DEBUG: setup_client_server_paths called with:", file=sys.stderr)
                     for i, p in enumerate(paths):
                         print(f"  [{i}] {p}", file=sys.stderr)
                     return original_setup(paths)
