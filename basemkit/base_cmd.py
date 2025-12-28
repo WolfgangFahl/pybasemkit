@@ -61,11 +61,13 @@ class BaseCmd:
         parser.add_argument("-a", "--about", action="store_true", help="show version info and open documentation")
         parser.add_argument("-d", "--debug", action="store_true", help="enable debug output")
         parser.add_argument(
-            "--debugLocalPath", help="remote debug Server path mapping - localPath - path on machine where python runs"
+            "--debugLocalPath", 
+            help="remote debug Server path mapping - localPath - path on machine where python runs"
         )
         parser.add_argument("--debugPort", type=int, default=5678, help="remote debug Port [default: %(default)s]")
         parser.add_argument(
-            "--debugRemotePath", help="remote debug Server path mapping - remotePath - path on debug server"
+            "--debugRemotePath", 
+            help="remote debug Server path mapping - remotePath - path on debug server"
         )
         parser.add_argument("--debugServer", help="remote debug Server")
         parser.add_argument("-f", "--force", action="store_true", help="force overwrite or unsafe actions")
@@ -130,6 +132,9 @@ class BaseCmd:
 
             remote_path = args.debugRemotePath
             local_path = args.debugLocalPath
+            if args.debug:
+                print(f"DEBUG: remote_path = {repr(remote_path)}", file=sys.stderr)
+                print(f"DEBUG: local_path = {repr(local_path)}", file=sys.stderr)
 
             # note the complexity of https://stackoverflow.com/a/41765551/1497139
             # discussed in 2011
