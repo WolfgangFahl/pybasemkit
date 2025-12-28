@@ -129,6 +129,8 @@ class BaseCmd:
         if args.debugServer:
             import pydevd
             import pydevd_file_utils
+            # Clear any bad environment variable data that was loaded at import time
+            pydevd_file_utils.PATHS_FROM_ECLIPSE_TO_PYTHON = []
 
             remote_path = args.debugRemotePath
             local_path = args.debugLocalPath
