@@ -128,7 +128,11 @@ class BaseCmd:
         """
         if args.debugServer:
             import pydevd
+            if args.debug:
+                print(f"Server pydevd version: {pydevd.__version__}")
             import pydevd_file_utils
+            if args.debug:
+                print(f"DEBUG: pydevd_file_utils is at: {os.path.abspath(pydevd_file_utils.__file__)}",file=sys.stderr)
             # Clear any bad environment variable data that was loaded at import time
             pydevd_file_utils.PATHS_FROM_ECLIPSE_TO_PYTHON = []
 
