@@ -157,7 +157,7 @@ class BaseCmd:
                 port=args.debugPort,
                 stdoutToServer=True,
                 stderrToServer=True,
-                suspend=True
+                suspend=False
             )
             print("Remote debugger attached.")
 
