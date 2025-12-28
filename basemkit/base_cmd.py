@@ -157,15 +157,24 @@ class BaseCmd:
                 # Monkey patch for https://stackoverflow.com/questions/79856091/pydev-path-mapping-with-virtual-env
                 # debugging
                 original_setup = pydevd_file_utils.setup_client_server_paths
-
+                
                 def debug_setup(paths):
-                    if args.debug:
-                        print(f"DEBUG: setup_client_server_paths called with:", file=sys.stderr)
+                    # Check if this is the bad call (single tuple with comma-separated strings)
+                    if len(paths) == 1 and isinstance(paths[0], tuple):
+                        remote, local = paths[0]
+                        if ',' in remote and ',' in local:
+                            print(f"DEBUG: IGNORING bad setup_client_server_paths call with comma-separated strings", file=sys.stderr)
+                            print(f"DEBUG: remote='{remote}'", file=sys.stderr)
+                            print(f"DEBUG: local='{local}'", file=sys.stderr)
+                            # Return without calling original - our good mappings are already set
+                            return
+                    
+                    print(f"DEBUG: setup_client_server_paths called with {len(paths)} paths:", file=sys.stderr)
                     for i, p in enumerate(paths):
                         print(f"  [{i}] {p}", file=sys.stderr)
                     return original_setup(paths)
-
-                pydevd_file_utils.setup_client_server_paths = debug_setup   
+                
+                pydevd_file_utils.setup_client_server_paths = debug_setup
                      
                 # https://github.com/fabioz/PyDev.Debugger/blob/main/pydevd_file_utils.py
                 pydevd_file_utils.setup_client_server_paths(mappings)
