@@ -148,6 +148,19 @@ class BaseCmd:
                     for r, l in mappings:
                         marker="✅" if os.path.exists(l) else "❌"
                         print(f"DEBUG PATH MAP: Remote (IDE)='{r}' <-> Local='{l}' {marker}", file=sys.stderr)
+                
+                # Monkey patch for https://stackoverflow.com/questions/79856091/pydev-path-mapping-with-virtual-env
+                # debugging
+                original_setup = pydevd_file_utils.setup_client_server_paths
+
+                def debug_setup(paths):
+                    print(f"DEBUG: setup_client_server_paths called with:", file=sys.stderr)
+                    for i, p in enumerate(paths):
+                        print(f"  [{i}] {p}", file=sys.stderr)
+                    return original_setup(paths)
+
+                pydevd_file_utils.setup_client_server_paths = debug_setup   
+                     
                 # https://github.com/fabioz/PyDev.Debugger/blob/main/pydevd_file_utils.py
                 pydevd_file_utils.setup_client_server_paths(mappings)
 
