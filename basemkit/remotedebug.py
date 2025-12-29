@@ -159,7 +159,7 @@ class RemoteDebugSetup:
         """
         Configures the path mappings between local machine and remote debug server.
         """
-        self.print_debug_info(self.path_mappings)
+        self.print_debug_info()
 
         # Monkey patch for https://stackoverflow.com/questions/79856091/pydev-path-mapping-with-virtual-env
         original_setup = pydevd_file_utils.setup_client_server_paths
