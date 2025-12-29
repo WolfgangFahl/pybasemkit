@@ -1,9 +1,9 @@
 """
 Created on 2025-12-29
 
-PyDev Remote Debugging utility class with the intention to hide the complexity
+PyDev Remote Debugging utility
 
-PyDev Remote debugging is explained at
+The intention to hide the complexity of PyDev Remote debugging as explained at
 
 https://www.pydev.org/manual_adv_remote_debugger.html
 
@@ -14,7 +14,6 @@ https://stackoverflow.com/questions/79856091/pydev-path-mapping-with-virtual-env
 Relevant sources:
 https://github.com/fabioz/PyDev.Debugger/blob/main/pydevd.py
 https://github.com/fabioz/PyDev.Debugger/blob/main/pydevd_file_utils.py
-
 
 @author: wf
 """
@@ -30,32 +29,35 @@ class PathMapping:
     """
     Represents a single path mapping
 
-    remote - The Execution Environment:
-        This is "Here" it is the target of you remote debugging activity - that is
-        why we call it remote in this context which might be confusing so we explain it
+    local / python - The Execution Environment:
+        This is "Here" it is the target of your remote debugging activity but
+        local to where you start your code to be debugged
 
-        This is where your Python script is currently running
+        It is where your Python script is currently running
         (e.g., a Docker container, a remote Linux server, or a virtual environment).
         When your code runs os.path.exists(m.local),
-        it is checking the filesystem of the machine executing the code.
-        In your code: debugLocalPath represents the path where the .py files
+        is checking the filesystem of the machine executing the code.
+
+        args.debugLocalPath represents the path where the .py files
         sit inside the server/container.
 
-    local - the IDE / Developer Environment:
+    remote / eclipse / vscode / pycharm - the IDE / Developer Environment:
 
-        This is "There".
+        This is "There". On the IDE your start Pydev/Start Debug Server
+        and "Debug Server at port: 5678" is displayed
+
         This is where the keyboard and monitor are (e.g., your Windows or Mac
         laptop running PyDev/Eclipse/VSCode).
 
         From the perspective of the running script, the IDE is a "Remote Server"
         listening for a connection.
 
-        In your code: debugRemotePath represents the path where
+        args.debugRemotePath represents the path where
         the source code sits on your physical laptop.
 
     """
-    remote: str
-    local: str
+    remote: str # eclipse / vscode/ pycharm
+    local: str  # python execution environment path to be remotely debugged
 
 @dataclass
 class PathMappings:
@@ -67,15 +69,16 @@ class PathMappings:
     @classmethod
     def from_args(cls, remote_str: str, local_str: str) -> 'PathMappings':
         """
-        Parses comma-separated remote and local path strings into a PathMappings object.
+        Parses comma-separated remote
+        and local path strings into a PathMappings object.
         """
-        remotes = [r.strip() for r in remote_str.split(",")]
-        locals_ = [l.strip() for l in local_str.split(",")]
+        remote_paths = [r.strip() for r in remote_str.split(",")]
+        local_paths = [l.strip() for l in local_str.split(",")]
 
-        if len(remotes) != len(locals_):
+        if len(remote_paths) != len(local_paths):
             raise ValueError("debugRemotePath and debugLocalPath must have the same number of entries")
 
-        mapping_list = [PathMapping(remote=r, local=l) for r, l in zip(remotes, locals_)]
+        mapping_list = [PathMapping(remote=r, local=l) for r, l in zip(remote_paths, local_paths)]
         path_mappings= cls(mappings=mapping_list)
         return path_mappings
 
@@ -147,6 +150,9 @@ class RemoteDebugSetup:
         self.get_path_mappings()
         self.setup_path_mappings(pydevd_file_utils)
 
+        # Initialize a remote debug session see
+        # https://www.pydev.org/manual_adv_remote_debugger.html
+        # suspend is True by default
         pydevd.settrace(
             self.args.debugServer,
             port=self.args.debugPort,
@@ -164,7 +170,11 @@ class RemoteDebugSetup:
         # Monkey patch for https://stackoverflow.com/questions/79856091/pydev-path-mapping-with-virtual-env
         original_setup = pydevd_file_utils.setup_client_server_paths
 
-        def debug_setup(paths: List[Tuple[str, str]]):
+        def fixed_setup(paths: List[Tuple[str, str]]):
+            """
+            protect setup_client_server_paths to be
+            called a second time with bad argumens
+            """
             # Check if this is the bad call (single tuple with comma-separated strings)
             if len(paths) == 1 and isinstance(paths[0], tuple):
                 remote, local = paths[0]
@@ -178,9 +188,11 @@ class RemoteDebugSetup:
             self.log(f"setup_client_server_paths called with {len(paths)} paths:")
             for i, p in enumerate(paths):
                 self.log(f"  [{i}] {p}")
+            # only call original_setup once
             return original_setup(paths)
 
-        pydevd_file_utils.setup_client_server_paths = debug_setup
+        # monkey patch the setup_client_server_paths
+        pydevd_file_utils.setup_client_server_paths = fixed_setup
 
         # https://github.com/fabioz/PyDev.Debugger/blob/main/pydevd_file_utils.py
         tuple_list=self.path_mappings.as_tuple_list()
@@ -200,4 +212,4 @@ class RemoteDebugSetup:
         if self.path_mappings:
             for m in self.path_mappings.mappings:
                 marker = "✅" if os.path.exists(m.local) else "❌"
-            self.log(f"PATH MAP: Remote (IDE)='{m.remote}' <-> Local='{m.local}' {marker}")
+                self.log(f"PATH MAP: Remote (IDE)='{m.remote}' <-> Local='{m.local}' {marker}")
