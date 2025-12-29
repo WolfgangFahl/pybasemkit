@@ -10,6 +10,8 @@ https://www.pydev.org/manual_adv_remote_debugger.html
 The Path mapping is notoriously complex as e.g. outlined in:
 
 https://stackoverflow.com/questions/79856091/pydev-path-mapping-with-virtual-env
+and
+https://github.com/WolfgangFahl/pybasemkit/issues/15
 
 Relevant sources:
 https://github.com/fabioz/PyDev.Debugger/blob/main/pydevd.py
