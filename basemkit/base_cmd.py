@@ -5,8 +5,7 @@ Minimal reusable command line base class with standard options.
 
 @author: wf
 """
-import os
-import socket
+
 import sys
 import traceback
 import webbrowser
@@ -14,6 +13,8 @@ from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
 from typing import Any, List, Optional
 
 import shutup
+
+from basemkit.remotedebug import RemoteDebugSetup
 
 # avoid ugly deprecation messages see
 # https://stackoverflow.com/questions/879173/how-to-ignore-deprecation-warnings-in-python
@@ -61,13 +62,11 @@ class BaseCmd:
         parser.add_argument("-a", "--about", action="store_true", help="show version info and open documentation")
         parser.add_argument("-d", "--debug", action="store_true", help="enable debug output")
         parser.add_argument(
-            "--debugLocalPath", 
-            help="remote debug Server path mapping - localPath - path on machine where python runs"
+            "--debugLocalPath", help="remote debug Server path mapping - localPath - path on machine where python runs"
         )
         parser.add_argument("--debugPort", type=int, default=5678, help="remote debug Port [default: %(default)s]")
         parser.add_argument(
-            "--debugRemotePath", 
-            help="remote debug Server path mapping - remotePath - path on debug server"
+            "--debugRemotePath", help="remote debug Server path mapping - remotePath - path on debug server"
         )
         parser.add_argument("--debugServer", help="remote debug Server")
         parser.add_argument("-f", "--force", action="store_true", help="force overwrite or unsafe actions")
@@ -120,80 +119,13 @@ class BaseCmd:
     def optional_debug(self, args: Namespace):
         """
         Optionally start pydevd remote debugging if debugServer is specified.
-
-        see https://www.pydev.org/manual_adv_remote_debugger.html
+        Delegates to RemoteDebugger class.
 
         Args:
             args (Namespace): Parsed CLI arguments
         """
-        if args.debugServer:
-            import pydevd
-            if args.debug:
-                print(f"Server pydevd version: {pydevd.__version__}")
-            import pydevd_file_utils
-            if args.debug:
-                print(f"DEBUG: pydevd_file_utils is at: {os.path.abspath(pydevd_file_utils.__file__)}",file=sys.stderr)
-            # Clear any bad environment variable data that was loaded at import time
-            pydevd_file_utils.PATHS_FROM_ECLIPSE_TO_PYTHON = []
-
-            remote_path = args.debugRemotePath
-            local_path = args.debugLocalPath
-            if args.debug:
-                print(f"DEBUG: remote_path = {repr(remote_path)}", file=sys.stderr)
-                print(f"DEBUG: local_path = {repr(local_path)}", file=sys.stderr)
-
-            # note the complexity of https://stackoverflow.com/a/41765551/1497139
-            # discussed in 2011
-            if remote_path and local_path:
-                remotes = [r.strip() for r in remote_path.split(",")]
-                locals_ = [l.strip() for l in local_path.split(",")]
-                if len(remotes) != len(locals_):
-                    raise ValueError("debugRemotePath and debugLocalPath must have the same number of entries")
-                mappings = list(zip(remotes, locals_))
-                if args.debug:
-                    fqdn = socket.getfqdn()
-                    print(f"Local={fqdn}",file=sys.stderr)
-                    print(f"Remote={args.debugServer}",file=sys.stderr)
-                    print(f"DEBUG: I am running in: {os.getcwd()}",file=sys.stderr)
-                    print(f"DEBUG: This file is at: {os.path.abspath(__file__)}",file=sys.stderr)
-                    for r, l in mappings:
-                        marker="✅" if os.path.exists(l) else "❌"
-                        print(f"DEBUG PATH MAP: Remote (IDE)='{r}' <-> Local='{l}' {marker}", file=sys.stderr)
-                
-                # Monkey patch for https://stackoverflow.com/questions/79856091/pydev-path-mapping-with-virtual-env
-                # debugging
-                original_setup = pydevd_file_utils.setup_client_server_paths
-                
-                def debug_setup(paths):
-                    # Check if this is the bad call (single tuple with comma-separated strings)
-                    if len(paths) == 1 and isinstance(paths[0], tuple):
-                        remote, local = paths[0]
-                        if ',' in remote and ',' in local:
-                            print(f"DEBUG: IGNORING bad setup_client_server_paths call with comma-separated strings", file=sys.stderr)
-                            print(f"DEBUG: remote='{remote}'", file=sys.stderr)
-                            print(f"DEBUG: local='{local}'", file=sys.stderr)
-                            # Return without calling original - our good mappings are already set
-                            return
-                    
-                    print(f"DEBUG: setup_client_server_paths called with {len(paths)} paths:", file=sys.stderr)
-                    for i, p in enumerate(paths):
-                        print(f"  [{i}] {p}", file=sys.stderr)
-                    return original_setup(paths)
-                
-                pydevd_file_utils.setup_client_server_paths = debug_setup
-                     
-                # https://github.com/fabioz/PyDev.Debugger/blob/main/pydevd_file_utils.py
-                pydevd_file_utils.setup_client_server_paths(mappings)
-
-
-            pydevd.settrace(
-                args.debugServer,
-                port=args.debugPort,
-                stdoutToServer=True,
-                stderrToServer=True,
-                suspend=False
-            )
-            print("Remote debugger attached.")
+        debug_setup = RemoteDebugSetup(args)
+        debug_setup.start()
 
     def handle_args(self, args: Namespace) -> bool:
         """
@@ -232,7 +164,7 @@ class BaseCmd:
         """
         exit_code = 0
         if isinstance(e, SystemExit):
-            exit_code=e.code if e.code is not None else 0
+            exit_code = e.code if e.code is not None else 0
         else:
             if isinstance(e, KeyboardInterrupt):
                 exit_code = 1
