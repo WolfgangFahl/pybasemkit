@@ -40,7 +40,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import asdict, dataclass, is_dataclass
 from datetime import date, datetime
 from pathlib import Path
-from typing import Any, Generic, TextIO, Type, TypeVar, Union
+from typing import Any, Generic, Optional, TextIO, Tuple, Type, TypeVar, Union
 
 import yaml
 from dacite import from_dict
@@ -107,6 +107,40 @@ class YamlAble(Generic[T]):
             self._yaml_dumper.add_representer(type(None), self.represent_none)
             self._yaml_dumper.add_representer(str, self.represent_literal)
 
+    @staticmethod
+    def _split_yaml_header(text: str) -> Tuple[str, str]:
+        """
+        Split raw YAML text into a leading comment block and the data body.
+
+        Scans lines from the top; a line belongs to the header if it starts
+        with '#' or is blank (blank lines between comment lines are kept).
+        Scanning stops at the first line that is neither a comment nor blank.
+        Trailing blank lines are trimmed from the header and prepended to the
+        body so that the body remains valid standalone YAML.
+
+        Args:
+            text: Raw YAML file content.
+
+        Returns:
+            A tuple (header, body) where header is the extracted comment block
+            (including a trailing newline) and body is the remainder.
+            If no leading comments are found, header is '' and body is text.
+        """
+        lines = text.splitlines(keepends=True)
+        split_idx = 0
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped.startswith("#") or stripped == "":
+                split_idx = i + 1
+            else:
+                break
+        # Trim trailing blank lines from the header, move them to the body
+        while split_idx > 0 and lines[split_idx - 1].strip() == "":
+            split_idx -= 1
+        header = "".join(lines[:split_idx])
+        body = "".join(lines[split_idx:])
+        return header, body
+
     def represent_none(self, _, __) -> yaml.Node:
         """
         Custom representer for ignoring None values in the YAML output.
@@ -169,33 +203,42 @@ class YamlAble(Generic[T]):
         return instance
 
     @classmethod
-    def load_from_yaml_stream(cls: Type[T], stream: TextIO) -> T:
+    def load_from_yaml_stream(cls: Type[T], stream: TextIO, with_header_comment: bool = False) -> T:
         """
         Loads a dataclass instance from a YAML stream.
 
         Args:
             stream (TextIO): The input stream containing YAML data.
+            with_header_comment: If True, extract any leading comment block from the
+                raw text and store it on the instance as ``_yaml_header`` so it can
+                be re-emitted by :meth:`save_to_yaml_stream`.
 
         Returns:
             T: An instance of the dataclass.
         """
         yaml_str: str = stream.read()
+        if with_header_comment:
+            header, yaml_str = cls._split_yaml_header(yaml_str)
         instance: T = cls.from_yaml(yaml_str)
+        if with_header_comment:
+            instance._yaml_header = header if header else None
         return instance
 
     @classmethod
-    def load_from_yaml_file(cls: Type[T], filename: str) -> T:
+    def load_from_yaml_file(cls: Type[T], filename: str, with_header_comment: bool = False) -> T:
         """
         Loads a dataclass instance from a YAML file.
 
         Args:
             filename (str): The path to the YAML file.
+            with_header_comment: If True, preserve any leading comment block found in
+                the file; see :meth:`load_from_yaml_stream` for details.
 
         Returns:
             T: An instance of the dataclass.
         """
         with open(filename, "r") as file:
-            return cls.load_from_yaml_stream(file)
+            return cls.load_from_yaml_stream(file, with_header_comment=with_header_comment)
 
     @classmethod
     def load_from_yaml_url(cls: Type[T], url: str) -> T:
@@ -212,26 +255,35 @@ class YamlAble(Generic[T]):
         instance: T = cls.from_yaml(yaml_str)
         return instance
 
-    def save_to_yaml_stream(self, file: TextIO):
+    def save_to_yaml_stream(self, file: TextIO, with_header_comment: bool = False):
         """
         Saves the current dataclass instance to the given YAML stream.
 
         Args:
             file (TextIO): The stream to which YAML content will be saved.
+            with_header_comment: If True and ``self._yaml_header`` is set (populated
+                by a previous :meth:`load_from_yaml_stream` call with the same flag),
+                the comment block is written before the YAML body.  If no header is
+                stored the flag is silently a no-op.
         """
         yaml_content: str = self.to_yaml()
+        header: Optional[str] = getattr(self, "_yaml_header", None)
+        if with_header_comment and header:
+            file.write(header)
+            file.write("\n")
         file.write(yaml_content)
 
-    def save_to_yaml_file(self, filename: str):
+    def save_to_yaml_file(self, filename: str, with_header_comment: bool = False):
         """
         Saves the current dataclass instance to a YAML file.
 
         Args:
             filename (str): The path where the YAML file will be saved.
+            with_header_comment: If True, re-emit any leading comment block that was
+                captured during loading; see :meth:`save_to_yaml_stream` for details.
         """
-
         with open(filename, "w", encoding="utf-8") as file:
-            self.save_to_yaml_stream(file)
+            self.save_to_yaml_stream(file, with_header_comment=with_header_comment)
 
     @classmethod
     def load_from_json_file(cls: Type[T], filename: Union[str, Path]) -> T:
