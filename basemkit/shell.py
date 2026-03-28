@@ -29,7 +29,9 @@ class ShellResult:
 
     def as_text(self, debug: bool = False):
         if debug:
-            text = f"{self.proc.args} → rc={self.proc.returncode}, success={self.success}"
+            text = (
+                f"{self.proc.args} → rc={self.proc.returncode}, success={self.success}"
+            )
         else:
             text = "✅" if self.success else f"❌ → rc={self.proc.returncode}"
         return text
@@ -232,6 +234,7 @@ class Shell:
         tee: bool = False,
         stdout_callback: Optional[Callable[[str], None]] = None,
         stderr_callback: Optional[Callable[[str], None]] = None,
+        timeout: int = 60,
     ) -> subprocess.CompletedProcess:
         """
         Run command with profile, always capturing output and optionally teeing it.
@@ -246,9 +249,13 @@ class Shell:
             tee: If True, also print output live while capturing
             stdout_callback: Optional callable invoked with each stdout line as it is produced
             stderr_callback: Optional callable invoked with each stderr line as it is produced
+            timeout: Timeout in seconds for command execution (default: 60)
 
         Returns:
             subprocess.CompletedProcess
+
+        Raises:
+            subprocess.TimeoutExpired: If the command exceeds the timeout
         """
         shell_cmd = f"source {self.profile} && {cmd}" if self.profile else cmd
 
@@ -270,7 +277,7 @@ class Shell:
             stdout_callback=stdout_callback,
             stderr_callback=stderr_callback,
         )
-        returncode = popen_process.wait()
+        returncode = popen_process.wait(timeout=timeout)
 
         process = subprocess.CompletedProcess(
             args=popen_process.args,
@@ -320,4 +327,6 @@ class Shell:
                 symbol = "✅"
             print(f"{symbol} {idx}/{total}: {path.name}")
         percent_ok = ((total - failures) / total) * 100 if total > 0 else 0
-        print(f"\n✅ {total - failures}/{total} ({percent_ok:.1f}%), ❌ {failures}/{total} ({100 - percent_ok:.1f}%)")
+        print(
+            f"\n✅ {total - failures}/{total} ({percent_ok:.1f}%), ❌ {failures}/{total} ({100 - percent_ok:.1f}%)"
+        )
