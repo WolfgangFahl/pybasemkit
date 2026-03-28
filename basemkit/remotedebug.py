@@ -158,8 +158,9 @@ class RemoteDebugSetup:
         pydevd.settrace(
             self.args.debugServer,
             port=self.args.debugPort,
-            stdoutToServer=True,
-            stderrToServer=True,
+            stdout_to_server=True,
+            stderr_to_server=True,
+            suspend=True,
         )
         print("Remote debugger attached.")
 
