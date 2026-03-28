@@ -159,7 +159,6 @@ class StdTee:
             stderr_callback=stderr_callback,
         )
         std_tee.start()
-        std_tee.join()
         return std_tee
 
 
@@ -178,6 +177,7 @@ class Shell:
         """
         self.profile = profile
         self.shell_path = shell_path
+        self.tee_timeout = 2
         if self.shell_path is None:
             self.shell_path = os.environ.get("SHELL", "/bin/bash")
         self.shell_name = os.path.basename(self.shell_path)
@@ -277,7 +277,13 @@ class Shell:
             stdout_callback=stdout_callback,
             stderr_callback=stderr_callback,
         )
-        returncode = popen_process.wait(timeout=timeout)
+        try:
+            returncode = popen_process.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            popen_process.kill()
+            raise
+        finally:
+            std_tee.join(timeout=self.tee_timeout)
 
         process = subprocess.CompletedProcess(
             args=popen_process.args,
