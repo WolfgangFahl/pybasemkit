@@ -71,8 +71,8 @@ class StreamTee:
     def start(self):
         self.thread.start()
 
-    def join(self):
-        self.thread.join()
+    def join(self, timeout: Optional[float] = None):
+        self.thread.join(timeout=timeout)
 
 
 class SysTee:
@@ -136,9 +136,9 @@ class StdTee:
         self.out_tee.start()
         self.err_tee.start()
 
-    def join(self):
-        self.out_tee.join()
-        self.err_tee.join()
+    def join(self, timeout: Optional[float] = None):
+        self.out_tee.join(timeout=timeout)
+        self.err_tee.join(timeout=timeout)
 
     @classmethod
     def run(
