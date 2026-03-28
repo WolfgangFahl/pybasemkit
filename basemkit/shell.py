@@ -11,7 +11,7 @@ import sys
 import threading
 from argparse import Namespace
 from pathlib import Path
-from typing import Dict, List
+from typing import Callable, Dict, List, Optional
 
 
 class ShellResult:
@@ -38,13 +38,22 @@ class ShellResult:
 class StreamTee:
     """
     Tees a single input stream to both a mirror and a capture buffer.
+    An optional per-line callback is invoked for each line after buffering.
     """
 
-    def __init__(self, source, mirror, buffer, tee=True):
+    def __init__(
+        self,
+        source,
+        mirror,
+        buffer,
+        tee=True,
+        callback: Optional[Callable[[str], None]] = None,
+    ):
         self.source = source
         self.mirror = mirror
         self.buffer = buffer
         self.tee = tee
+        self.callback = callback
         self.thread = threading.Thread(target=self._run, daemon=True)
 
     def _run(self):
@@ -53,6 +62,8 @@ class StreamTee:
                 self.mirror.write(line)
                 self.mirror.flush()
             self.buffer.write(line)
+            if self.callback:
+                self.callback(line)
         self.source.close()
 
     def start(self):
@@ -92,13 +103,32 @@ class StdTee:
     """
     Manages teeing for both stdout and stderr using StreamTee instances.
     Captures output in instance variables.
+    Optional per-line callbacks are invoked for each stdout/stderr line.
     """
 
-    def __init__(self, process, tee=True):
+    def __init__(
+        self,
+        process,
+        tee=True,
+        stdout_callback: Optional[Callable[[str], None]] = None,
+        stderr_callback: Optional[Callable[[str], None]] = None,
+    ):
         self.stdout_buffer = io.StringIO()
         self.stderr_buffer = io.StringIO()
-        self.out_tee = StreamTee(process.stdout, sys.stdout, self.stdout_buffer, tee)
-        self.err_tee = StreamTee(process.stderr, sys.stderr, self.stderr_buffer, tee)
+        self.out_tee = StreamTee(
+            process.stdout,
+            sys.stdout,
+            self.stdout_buffer,
+            tee,
+            callback=stdout_callback,
+        )
+        self.err_tee = StreamTee(
+            process.stderr,
+            sys.stderr,
+            self.stderr_buffer,
+            tee,
+            callback=stderr_callback,
+        )
 
     def start(self):
         self.out_tee.start()
@@ -109,12 +139,23 @@ class StdTee:
         self.err_tee.join()
 
     @classmethod
-    def run(cls, process, tee=True):
+    def run(
+        cls,
+        process,
+        tee=True,
+        stdout_callback: Optional[Callable[[str], None]] = None,
+        stderr_callback: Optional[Callable[[str], None]] = None,
+    ):
         """
         Run teeing and capture for the given process.
         Returns a StdTee instance with stdout/stderr captured.
         """
-        std_tee = cls(process, tee=tee)
+        std_tee = cls(
+            process,
+            tee=tee,
+            stdout_callback=stdout_callback,
+            stderr_callback=stderr_callback,
+        )
         std_tee.start()
         std_tee.join()
         return std_tee
@@ -181,15 +222,30 @@ class Shell:
         shell = cls(profile=profile)
         return shell
 
-    def run(self, cmd: str, text: bool = True, debug: bool = False, tee: bool = False) -> subprocess.CompletedProcess:
+    def run(
+        self,
+        cmd: str,
+        text: bool = True,
+        encoding: str = "utf-8",
+        errors: str = "replace",
+        debug: bool = False,
+        tee: bool = False,
+        stdout_callback: Optional[Callable[[str], None]] = None,
+        stderr_callback: Optional[Callable[[str], None]] = None,
+    ) -> subprocess.CompletedProcess:
         """
         Run command with profile, always capturing output and optionally teeing it.
 
         Args:
             cmd: Command to run
             text: Text mode for subprocess I/O
+            encoding: Character encoding for subprocess I/O (default: utf-8)
+            errors: Error handling for decoding (default: replace — bad bytes become U+FFFD
+                instead of raising UnicodeDecodeError; pass 'strict' to restore old behaviour)
             debug: Print the command to be run
             tee: If True, also print output live while capturing
+            stdout_callback: Optional callable invoked with each stdout line as it is produced
+            stderr_callback: Optional callable invoked with each stderr line as it is produced
 
         Returns:
             subprocess.CompletedProcess
@@ -204,9 +260,16 @@ class Shell:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=text,
+            encoding=encoding,
+            errors=errors,
         )
 
-        std_tee = StdTee.run(popen_process, tee=tee)
+        std_tee = StdTee.run(
+            popen_process,
+            tee=tee,
+            stdout_callback=stdout_callback,
+            stderr_callback=stderr_callback,
+        )
         returncode = popen_process.wait()
 
         process = subprocess.CompletedProcess(

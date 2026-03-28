@@ -19,12 +19,14 @@ https://github.com/fabioz/PyDev.Debugger/blob/main/pydevd_file_utils.py
 
 @author: wf
 """
+
 import os
 import socket
 import sys
 from argparse import Namespace
 from dataclasses import dataclass, field
 from typing import List, Tuple
+
 
 @dataclass
 class PathMapping:
@@ -58,18 +60,21 @@ class PathMapping:
         the source code sits on your physical laptop.
 
     """
-    remote: str # eclipse / vscode/ pycharm
+
+    remote: str  # eclipse / vscode/ pycharm
     local: str  # python execution environment path to be remotely debugged
+
 
 @dataclass
 class PathMappings:
     """
     Represents a collection of path mappings.
     """
+
     mappings: List[PathMapping] = field(default_factory=list)
 
     @classmethod
-    def from_args(cls, remote_str: str, local_str: str) -> 'PathMappings':
+    def from_args(cls, remote_str: str, local_str: str) -> "PathMappings":
         """
         Parses comma-separated remote
         and local path strings into a PathMappings object.
@@ -81,15 +86,16 @@ class PathMappings:
             raise ValueError("debugRemotePath and debugLocalPath must have the same number of entries")
 
         mapping_list = [PathMapping(remote=r, local=l) for r, l in zip(remote_paths, local_paths)]
-        path_mappings= cls(mappings=mapping_list)
+        path_mappings = cls(mappings=mapping_list)
         return path_mappings
 
     def as_tuple_list(self) -> List[Tuple[str, str]]:
         """
         Returns the mappings in the format required by pydevd (list of tuples).
         """
-        tuple_list= [(m.remote, m.local) for m in self.mappings]
+        tuple_list = [(m.remote, m.local) for m in self.mappings]
         return tuple_list
+
 
 class RemoteDebugSetup:
     """
@@ -104,7 +110,7 @@ class RemoteDebugSetup:
             args (Namespace): Parsed CLI arguments containing debug flags.
         """
         self.args = args
-        self.path_mappings=None
+        self.path_mappings = None
 
     def get_path_mappings(self):
         """
@@ -119,7 +125,6 @@ class RemoteDebugSetup:
         # note the complexity of https://stackoverflow.com/a/41765551/1497139
         if remote_path and local_path:
             self.path_mappings = PathMappings.from_args(remote_path, local_path)
-
 
     def log(self, msg: str):
         """
@@ -181,7 +186,7 @@ class RemoteDebugSetup:
             # Check if this is the bad call (single tuple with comma-separated strings)
             if len(paths) == 1 and isinstance(paths[0], tuple):
                 remote, local = paths[0]
-                if ',' in remote and ',' in local:
+                if "," in remote and "," in local:
                     self.log("IGNORING bad setup_client_server_paths call with comma-separated strings")
                     self.log(f"remote='{remote}'")
                     self.log(f"local='{local}'")
@@ -198,7 +203,7 @@ class RemoteDebugSetup:
         pydevd_file_utils.setup_client_server_paths = fixed_setup
 
         # https://github.com/fabioz/PyDev.Debugger/blob/main/pydevd_file_utils.py
-        tuple_list=self.path_mappings.as_tuple_list()
+        tuple_list = self.path_mappings.as_tuple_list()
         pydevd_file_utils.setup_client_server_paths(tuple_list)
 
     def print_debug_info(self):
