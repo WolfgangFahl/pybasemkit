@@ -10,3 +10,76 @@ Python base module kit: YAML/JSON I/O, structured logging, CLI tooling, shell ex
 
 ## Docs and Tutorials
 [Wiki](https://wiki.bitplan.com/index.php/pybasemkit)
+
+## CLI Tooling
+
+`basemkit.base_cmd.BaseCmd` is the standard base class for every BITPlan
+command line interface. It provides the house-standard options
+`-a/--about`, `-d/--debug`, `--debugServer/--debugPort` (remote pydevd),
+`-f/--force`, `-q/--quiet`, `-v/--verbose` and `-V/--version` plus
+consistent exit codes (0 = OK, 1 = KeyboardInterrupt, 2 = Exception).
+Downstream projects must subclass it instead of using plain `argparse`.
+
+The canonical pattern - a `Version` dataclass and a `BaseCmd` subclass:
+
+```python
+from dataclasses import dataclass
+
+from basemkit.base_cmd import BaseCmd
+
+import mytool
+
+
+@dataclass
+class Version:
+    """Version information for mytool."""
+
+    name: str = "mytool"
+    version: str = mytool.__version__
+    date: str = "2026-08-02"
+    updated: str = "2026-08-02"
+    description: str = "what mytool does"
+    authors: str = "Wolfgang Fahl"
+    doc_url: str = "https://wiki.bitplan.com/index.php/Mytool"
+    chat_url: str = "https://github.com/WolfgangFahl/mytool/discussions"
+    cm_url: str = "https://github.com/WolfgangFahl/mytool"
+
+
+class MytoolCmd(BaseCmd):
+    """mytool command line interface."""
+
+    def __init__(self):
+        super().__init__(Version())
+
+    def add_arguments(self, parser):
+        """Add tool arguments to the given parser."""
+        super().add_arguments(parser)
+        parser.add_argument("--input", help="input file")
+
+    def handle_args(self, args) -> bool:
+        """Handle parsed arguments."""
+        handled = super().handle_args(args)
+        if not handled and args.input:
+            # tool logic here
+            handled = True
+        return handled
+
+
+def main(argv=None) -> int:
+    """CLI entry point."""
+    cmd = MytoolCmd()
+    exit_code = cmd.run(argv)
+    return exit_code
+```
+
+Register the entry point in `pyproject.toml`:
+
+```toml
+[project.scripts]
+mytool = "mytool.mytool_cmd:main"
+```
+
+Live examples: [gov-service](https://github.com/WolfgangFahl/gov-service),
+[ProfiWiki](https://github.com/WolfgangFahl/ProfiWiki),
+[djvu-viewer](https://github.com/WolfgangFahl/djvu-viewer),
+[ngwidgets](https://github.com/WolfgangFahl/nicegui_widgets).

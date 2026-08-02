@@ -232,6 +232,19 @@ except BaseException as e:
 
 ---
 
+## CLI Standard
+
+`basemkit.base_cmd.BaseCmd` is the house standard base class for every BITPlan
+command line interface - in this repository and in every downstream project.
+Agents building or refactoring a CLI anywhere in the BITPlan ecosystem must
+subclass `BaseCmd` instead of using plain `argparse`, so that every tool
+carries the standard options (`-a/--about`, `-d/--debug`, `--debugServer`,
+`-f/--force`, `-q/--quiet`, `-v/--verbose`, `-V/--version`) and exit codes.
+The canonical subclass pattern is documented in the
+[CLI Tooling section of the README](README.md#cli-tooling).
+
+---
+
 ## Writing Tests
 
 All test classes must subclass `Basetest`, not `unittest.TestCase` directly.
