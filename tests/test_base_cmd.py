@@ -25,6 +25,26 @@ class TestBaseCmd(Basetest):
     def setUp(self, debug=False, profile=True):
         super().setUp(debug=debug, profile=profile)
 
+    def test_exit_code(self):
+        """
+        test that run returns the exit_code a subclass sets in handle_args
+        """
+
+        class ExitCodeCmd(BaseCmd):
+            """
+            command setting an exit code depending on --force
+            """
+
+            def handle_args(self, args: Namespace) -> bool:
+                if args.force:
+                    self.exit_code = 1
+                return True
+
+        for argv, expected in [([], 0), (["--force"], 1)]:
+            with self.subTest(argv=argv):
+                cmd = ExitCodeCmd(version=DummyVersion)
+                self.assertEqual(expected, cmd.run(argv))
+
     def test_arg_parsing(self):
         """
         test standard argument parsing and flags

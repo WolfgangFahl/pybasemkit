@@ -188,14 +188,13 @@ class BaseCmd:
             argv (list): Optional command line arguments.
 
         Returns:
-            int: Exit code: 0 = OK, 1 = KeyboardInterrupt, 2 = Exception.
+            int: Exit code: self.exit_code as set by handle_args (0 = OK),
+                 1 = KeyboardInterrupt, 2 = Exception.
         """
         try:
             args = self.parse_args(argv)
-            handled = self.handle_args(args)
-            exit_code = 0
-            if not handled:
-                exit_code = 0
+            self.handle_args(args)
+            exit_code = self.exit_code
         except BaseException as e:
             exit_code = self.handle_exception(e)
         return exit_code
